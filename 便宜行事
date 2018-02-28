@@ -1,0 +1,31 @@
+%%查看某玩家某daily数据
+[{_,_, L}] = ets:lookup(player_data_daily, 玩家id).
+lists:keyfind(数据名, 1, L).
+
+%% Swap占用情况
+for i in $(ls /proc | grep "^[0-9]" | awk '$0>100'); do awk '/Swap:/{a=a+$2}END{print '"$i"',a/1024"M"}' /proc/$i/smaps;done| sort -k2nr | head
+
+%% OOM分数
+#!/bin/bash
+for proc in $(find /proc -maxdepth 1 -regex '/proc/[0-9]+'); do
+    printf "%2d %5d %s\n" \
+        "$(cat $proc/oom_score)" \
+        "$(basename $proc)" \
+        "$(cat $proc/cmdline | tr '\0' ' ' | head -c 50)"
+done 2>/dev/null | sort -nr | head -n 10
+
+# chmod +x oomscore.sh
+# ./oomscore.sh
+18   981 /usr/sbin/mysqld
+ 4 31359 -bash
+ 4 31056 -bash
+ 1 31358 sshd: root@pts/6
+ 1 31244 sshd: vpsee [priv]
+ 1 31159 -bash
+ 1 31158 sudo -i
+ 1 31055 sshd: root@pts/3
+ 1 30912 sshd: vpsee [priv]
+ 1 29547 /usr/sbin/sshd -D
+
+%% erlang内存占用
+spawn(fun()-> etop:start([{output, text}, {interval, 1}, {lines, 20}, {sort, memory}]) end).
